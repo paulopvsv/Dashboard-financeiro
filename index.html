@@ -1,0 +1,1416 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Financeiro Premium</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="./dados.js"></script>
+  <style>
+    :root{
+      --bg:#f4f7fb;
+      --card:#ffffff;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+      --primary:#1f6fb2;
+      --primary-2:#1e9e6b;
+      --accent:#c98a1e;
+      --danger:#dc2626;
+      --warning:#d97706;
+      --success:#16a34a;
+      --shadow:0 10px 30px rgba(15,23,42,.08);
+      --radius:18px;
+    }
+
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .container{
+      max-width:1440px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    .hero{
+      background:linear-gradient(135deg,#123a61 0%, #1f6fb2 45%, #2e8bcf 100%);
+      color:#fff;
+      padding:28px;
+      border-radius:24px;
+      box-shadow:var(--shadow);
+      margin-bottom:20px;
+    }
+
+    .hero-top{
+      display:flex;
+      justify-content:space-between;
+      gap:16px;
+      align-items:flex-start;
+      flex-wrap:wrap;
+    }
+
+    .hero h1{
+      margin:0 0 8px 0;
+      font-size:30px;
+      line-height:1.15;
+    }
+
+    .hero p{
+      margin:4px 0;
+      color:rgba(255,255,255,.9);
+    }
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:14px;
+    }
+
+    .badge{
+      padding:8px 12px;
+      background:rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:999px;
+      font-size:12px;
+      backdrop-filter: blur(6px);
+    }
+
+    .filters{
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      margin-top:18px;
+    }
+
+    .filter-box{
+      background:rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.18);
+      border-radius:14px;
+      padding:10px 12px;
+      min-width:220px;
+    }
+
+    .filter-box label{
+      display:block;
+      font-size:12px;
+      opacity:.9;
+      margin-bottom:6px;
+    }
+
+    .filter-box select{
+      width:100%;
+      padding:10px 12px;
+      border:none;
+      border-radius:10px;
+      outline:none;
+      color:#111827;
+      background:#fff;
+      font-size:14px;
+    }
+
+    .note{
+      margin-top:14px;
+      padding:12px 14px;
+      background:rgba(255,255,255,.12);
+      border-left:4px solid rgba(255,255,255,.55);
+      border-radius:12px;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      margin:18px 0 22px;
+    }
+
+    .tab-btn{
+      border:none;
+      background:#fff;
+      color:#374151;
+      padding:12px 14px;
+      border-radius:12px;
+      cursor:pointer;
+      box-shadow:var(--shadow);
+      font-weight:600;
+      transition:.2s ease;
+    }
+
+    .tab-btn.active{
+      background:var(--primary);
+      color:#fff;
+    }
+
+    .tab-content{display:none}
+    .tab-content.active{display:block}
+
+    .grid{
+      display:grid;
+      gap:16px;
+    }
+
+    .grid.kpi{
+      grid-template-columns:repeat(5, minmax(0,1fr));
+    }
+
+    .grid.two{
+      grid-template-columns:repeat(2, minmax(0,1fr));
+    }
+
+    .grid.three{
+      grid-template-columns:repeat(3, minmax(0,1fr));
+    }
+
+    .grid.four{
+      grid-template-columns:repeat(4, minmax(0,1fr));
+    }
+
+    .card{
+      background:var(--card);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+      padding:18px;
+      border:1px solid #eef2f7;
+    }
+
+    .card h3{
+      margin:0 0 12px 0;
+      font-size:16px;
+    }
+
+    .kpi-card{
+      padding:18px;
+      border-radius:18px;
+      color:#fff;
+      min-height:120px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .kpi-card.primary{background:linear-gradient(135deg,#1f6fb2,#2e8bcf)}
+    .kpi-card.green{background:linear-gradient(135deg,#1e9e6b,#34c38f)}
+    .kpi-card.dark{background:linear-gradient(135deg,#1f2937,#374151)}
+    .kpi-card.orange{background:linear-gradient(135deg,#c98a1e,#e9a72d)}
+    .kpi-card.red{background:linear-gradient(135deg,#b91c1c,#ef4444)}
+
+    .kpi-label{
+      font-size:13px;
+      opacity:.92;
+      margin-bottom:10px;
+    }
+
+    .kpi-value{
+      font-size:28px;
+      font-weight:800;
+      line-height:1.1;
+      margin-bottom:8px;
+    }
+
+    .kpi-sub{
+      font-size:12px;
+      opacity:.92;
+    }
+
+    .section-title{
+      margin:4px 0 14px;
+      font-size:20px;
+      font-weight:800;
+      color:#111827;
+    }
+
+    .mini-list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .mini-item{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+    }
+
+    .mini-item strong{
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .pill.green{background:#dcfce7;color:#166534}
+    .pill.yellow{background:#fef3c7;color:#92400e}
+    .pill.red{background:#fee2e2;color:#991b1b}
+    .pill.gray{background:#eef2f7;color:#475569}
+    .pill.blue{background:#dbeafe;color:#1d4ed8}
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      font-size:13px;
+    }
+
+    th,td{
+      padding:10px 8px;
+      border-bottom:1px solid var(--line);
+      text-align:left;
+      vertical-align:top;
+    }
+
+    th{
+      color:#475569;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.03em;
+    }
+
+    .table-wrap{
+      overflow:auto;
+    }
+
+    .muted{color:var(--muted)}
+    .right{text-align:right}
+    .center{text-align:center}
+
+    .alert-card{
+      border-left:6px solid;
+      padding:16px;
+      border-radius:14px;
+      background:#fff;
+      box-shadow:var(--shadow);
+    }
+
+    .alert-card.green{border-color:var(--success)}
+    .alert-card.yellow{border-color:var(--warning)}
+    .alert-card.red{border-color:var(--danger)}
+
+    .alert-title{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      font-weight:800;
+      margin-bottom:8px;
+    }
+
+    .foot{
+      margin-top:22px;
+      color:#64748b;
+      font-size:12px;
+      text-align:center;
+    }
+
+    .empty{
+      padding:18px;
+      border:1px dashed #cbd5e1;
+      border-radius:14px;
+      color:#64748b;
+      background:#fff;
+    }
+
+    canvas{
+      width:100% !important;
+      max-height:340px !important;
+    }
+
+    @media (max-width: 1200px){
+      .grid.kpi{grid-template-columns:repeat(3, minmax(0,1fr))}
+      .grid.four{grid-template-columns:repeat(2, minmax(0,1fr))}
+    }
+
+    @media (max-width: 900px){
+      .grid.two,.grid.three,.grid.four{grid-template-columns:1fr}
+      .grid.kpi{grid-template-columns:repeat(2, minmax(0,1fr))}
+    }
+
+    @media (max-width: 640px){
+      .grid.kpi{grid-template-columns:1fr}
+      .hero h1{font-size:24px}
+      .container{padding:14px}
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <section class="hero">
+      <div class="hero-top">
+        <div>
+          <h1 id="tituloDashboard">Dashboard Financeiro Premium</h1>
+          <p id="subtituloDashboard">Estrutura consolidada</p>
+          <div class="badges">
+            <span class="badge" id="badgeMes">Competência</span>
+            <span class="badge" id="badgeTri">Trimestre</span>
+            <span class="badge">Visão Gerencial</span>
+            <span class="badge">Compliance</span>
+            <span class="badge">Conciliação</span>
+          </div>
+        </div>
+
+        <div class="filters">
+          <div class="filter-box">
+            <label for="filtroConta">Conta</label>
+            <select id="filtroConta"></select>
+          </div>
+
+          <div class="filter-box">
+            <label for="filtroPeriodo">Período</label>
+            <select id="filtroPeriodo">
+              <option value="mes">Mês atual</option>
+              <option value="trimestre">Trimestre</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="note" id="notaVisaoGeral"></div>
+    </section>
+
+    <div class="tabs" id="tabs">
+      <button class="tab-btn active" data-tab="visaoGeral">Visão Geral</button>
+      <button class="tab-btn" data-tab="liquidez">Liquidez e Caixa</button>
+      <button class="tab-btn" data-tab="receitas">Receita Operacional</button>
+      <button class="tab-btn" data-tab="tributos">Carga Tributária</button>
+      <button class="tab-btn" data-tab="despesas">Despesas Operacionais</button>
+      <button class="tab-btn" data-tab="relacionadas">Partes Relacionadas</button>
+      <button class="tab-btn" data-tab="compliance">Compliance</button>
+      <button class="tab-btn" data-tab="conciliacao">Conciliação</button>
+      <button class="tab-btn" data-tab="riscos">Indicadores de Risco</button>
+    </div>
+
+    <section id="visaoGeral" class="tab-content active">
+      <h2 class="section-title">Visão Geral</h2>
+      <div class="grid kpi" id="kpisGerais"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Histórico consolidado</h3>
+          <canvas id="chartHistorico"></canvas>
+        </div>
+        <div class="card">
+          <h3>Resumo executivo</h3>
+          <div id="resumoExecutivo" class="mini-list"></div>
+        </div>
+      </div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Alertas executivos</h3>
+          <div id="alertasExecutivos" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>KPIs premium</h3>
+          <div id="kpisPremium" class="mini-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="liquidez" class="tab-content">
+      <h2 class="section-title">Liquidez e Caixa</h2>
+      <div class="grid four" id="kpisLiquidez"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Evolução do saldo diário</h3>
+          <canvas id="chartSaldo"></canvas>
+        </div>
+        <div class="card">
+          <h3>Limites e utilização</h3>
+          <div id="limitesConta" class="mini-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="receitas" class="tab-content">
+      <h2 class="section-title">Receita Operacional</h2>
+      <div class="grid four" id="kpisReceita"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Composição da receita</h3>
+          <canvas id="chartComposicaoReceita"></canvas>
+        </div>
+        <div class="card">
+          <h3>Receita por bandeira</h3>
+          <canvas id="chartBandeiras"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Top pagadores</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Pagador</th>
+                <th>Contas</th>
+                <th class="right">Valor</th>
+                <th class="right">% da receita</th>
+              </tr>
+            </thead>
+            <tbody id="topPagadoresBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="tributos" class="tab-content">
+      <h2 class="section-title">Carga Tributária</h2>
+      <div class="grid four" id="kpisTributos"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Mapa tributário</h3>
+          <div id="mapaTributario" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>Leitura histórica tributária</h3>
+          <canvas id="chartTributosHistorico"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Tributos pagos</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Tributo</th>
+                <th>Conta</th>
+                <th class="right">Valor</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="tributosPagosBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="despesas" class="tab-content">
+      <h2 class="section-title">Despesas Operacionais</h2>
+      <div class="grid four" id="kpisDespesas"></div>
+
+      <div class="grid two" style="margin-top:16px;">
+        <div class="card">
+          <h3>Despesas por categoria</h3>
+          <canvas id="chartDespesasCategoria"></canvas>
+        </div>
+        <div class="card">
+          <h3>Fixas x Variáveis</h3>
+          <canvas id="chartDespesasTipo"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section id="relacionadas" class="tab-content">
+      <h2 class="section-title">Partes Relacionadas</h2>
+      <div class="grid three" id="kpisRelacionadas"></div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Operações intercompany / relacionadas</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Origem</th>
+                <th>Destino</th>
+                <th class="right">Valor</th>
+                <th>Natureza</th>
+                <th>Status</th>
+                <th>Documentação</th>
+                <th>Alerta</th>
+              </tr>
+            </thead>
+            <tbody id="intercompanyBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Movimentações relevantes da conta PF</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Lançamento</th>
+                <th class="right">Valor</th>
+                <th>Classificação</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="movPFBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="compliance" class="tab-content">
+      <h2 class="section-title">Compliance e Governança</h2>
+
+      <div class="grid two">
+        <div class="card">
+          <h3>Pendências de compliance</h3>
+          <div id="pendenciasCompliance" class="mini-list"></div>
+        </div>
+        <div class="card">
+          <h3>Indicadores de governança</h3>
+          <div id="indicadoresGovernanca" class="mini-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="conciliacao" class="tab-content">
+      <h2 class="section-title">Conciliação</h2>
+
+      <div class="grid four" id="kpisConciliacao"></div>
+
+      <div class="card" style="margin-top:16px;">
+        <h3>Itens conciliatórios</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th class="right">Bancário</th>
+                <th class="right">Contábil</th>
+                <th class="right">Diferença</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="conciliacaoBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section id="riscos" class="tab-content">
+      <h2 class="section-title">Indicadores de Risco</h2>
+
+      <div class="grid two">
+        <div class="card">
+          <h3>Radar de risco</h3>
+          <canvas id="chartRisco"></canvas>
+        </div>
+        <div class="card">
+          <h3>Leitura crítica</h3>
+          <div id="leituraRisco" class="mini-list"></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="foot" id="rodapeTecnico"></div>
+  </div>
+
+  <script>
+    const DATA = window.DASHBOARD_DATA || {};
+
+    const charts = {};
+
+    const $ = (id) => document.getElementById(id);
+
+    function moeda(v){
+      const n = Number(v || 0);
+      return n.toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+    }
+
+    function numero(v, casas = 2){
+      const n = Number(v || 0);
+      return n.toLocaleString('pt-BR', { minimumFractionDigits: casas, maximumFractionDigits: casas });
+    }
+
+    function pct(v){
+      const n = Number(v || 0);
+      return `${n.toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 })}%`;
+    }
+
+    function sum(arr){
+      return (arr || []).reduce((a,b) => a + Number(b || 0), 0);
+    }
+
+    function avg(arr){
+      const valid = (arr || []).filter(v => v !== null && v !== undefined && !isNaN(Number(v)));
+      return valid.length ? sum(valid) / valid.length : 0;
+    }
+
+    function lastNonNull(arr){
+      for(let i = (arr || []).length - 1; i >= 0; i--){
+        const v = arr[i];
+        if(v !== null && v !== undefined && !isNaN(Number(v))) return Number(v);
+      }
+      return 0;
+    }
+
+    function firstNonNull(arr){
+      for(let i = 0; i < (arr || []).length; i++){
+        const v = arr[i];
+        if(v !== null && v !== undefined && !isNaN(Number(v))) return Number(v);
+      }
+      return 0;
+    }
+
+    function badgeStatus(status){
+      const map = {
+        real:'blue',
+        estimado:'yellow',
+        pendente:'red',
+        pago:'green',
+        Pago:'green',
+        ok:'green',
+        atencao:'yellow',
+        critico:'red',
+        green:'green',
+        yellow:'yellow',
+        red:'red',
+        gerencial:'gray',
+        parcial:'yellow',
+        Parcial:'yellow'
+      };
+      const cls = map[status] || 'gray';
+      return `<span class="pill ${cls}">${status}</span>`;
+    }
+
+    function getContaOptions(){
+      const contas = DATA.contas || [];
+      return [
+        { id:'all', nome:'Consolidado (todas as contas)' },
+        ...contas.map(c => ({ id:c.id, nome:c.nome }))
+      ];
+    }
+
+    function populateFilters(){
+      const filtroConta = $('filtroConta');
+      filtroConta.innerHTML = getContaOptions()
+        .map(c => `<option value="${c.id}">${c.nome}</option>`)
+        .join('');
+    }
+
+    function currentFilters(){
+      return {
+        conta: $('filtroConta').value || 'all',
+        periodo: $('filtroPeriodo').value || 'mes'
+      };
+    }
+
+    function contaNomeById(id){
+      const c = (DATA.contas || []).find(x => x.id === id);
+      return c ? c.nome : id;
+    }
+
+    function contasSelecionadas(){
+      const { conta } = currentFilters();
+      if(conta === 'all') return (DATA.contas || []).map(c => c.id);
+      return [conta];
+    }
+
+    function isPJ(id){
+      const c = (DATA.contas || []).find(x => x.id === id);
+      return c?.tipo === 'PJ';
+    }
+
+    function contasSelecionadasPJ(){
+      return contasSelecionadas().filter(isPJ);
+    }
+
+    function totalSaldoSelecionado(){
+      return contasSelecionadas().reduce((acc, id) => acc + lastNonNull(DATA.saldoDiario?.[id] || []), 0);
+    }
+
+    function saldoInicialSelecionado(){
+      return contasSelecionadas().reduce((acc, id) => acc + firstNonNull(DATA.saldoDiario?.[id] || []), 0);
+    }
+
+    function totalReceitaSelecionada(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.resumoMensalPorConta?.[id]?.receita || 0), 0);
+    }
+
+    function totalDespesaSelecionada(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.resumoMensalPorConta?.[id]?.despesas || 0), 0);
+    }
+
+    function totalTributoSelecionado(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.resumoMensalPorConta?.[id]?.tributos || 0), 0);
+    }
+
+    function resultadoAntesTributos(){
+      return totalReceitaSelecionada() - totalDespesaSelecionada();
+    }
+
+    function resultadoLiquido(){
+      return totalReceitaSelecionada() - totalDespesaSelecionada() - totalTributoSelecionado();
+    }
+
+    function variacaoSaldoPct(){
+      const ini = saldoInicialSelecionado();
+      const fim = totalSaldoSelecionado();
+      if(!ini) return 0;
+      return ((fim - ini) / ini) * 100;
+    }
+
+    function totalComposicaoSelecionada(){
+      return contasSelecionadasPJ().reduce((acc, id) => {
+        const c = DATA.composicaoReceitaPorConta?.[id] || {};
+        return acc + Number(c.cartao || 0) + Number(c.pix || 0) + Number(c.outros || 0);
+      }, 0);
+    }
+
+    function totalPixSelecionado(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.composicaoReceitaPorConta?.[id]?.pix || 0), 0);
+    }
+
+    function totalCartaoSelecionado(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.composicaoReceitaPorConta?.[id]?.cartao || 0), 0);
+    }
+
+    function totalOutrosSelecionado(){
+      return contasSelecionadasPJ().reduce((acc, id) => acc + Number(DATA.composicaoReceitaPorConta?.[id]?.outros || 0), 0);
+    }
+
+    function topPagadoresFiltrados(){
+      const selecionadas = contasSelecionadas();
+      return (DATA.topPagadores || []).filter(p => {
+        if(currentFilters().conta === 'all') return true;
+        return (p.contas || []).includes(currentFilters().conta);
+      }).sort((a,b) => Number(b.valor || 0) - Number(a.valor || 0));
+    }
+
+    function tributosFiltrados(){
+      return (DATA.tributosPagos || []).filter(t => {
+        return currentFilters().conta === 'all' ? true : t.contaId === currentFilters().conta;
+      });
+    }
+
+    function despesasCategoriaFiltradas(){
+      return (DATA.despesasCategoria || []).filter(d => {
+        return currentFilters().conta === 'all' ? true : (d.contaIds || []).includes(currentFilters().conta);
+      });
+    }
+
+    function despesasTipoFiltradas(){
+      return (DATA.despesasTipo || []).filter(d => {
+        return currentFilters().conta === 'all' ? true : (d.contaIds || []).includes(currentFilters().conta);
+      });
+    }
+
+    function intercompanyFiltrado(){
+      return (DATA.intercompany || []).filter(i => {
+        const c = currentFilters().conta;
+        if(c === 'all') return true;
+        return i.origemId === c || i.destinoId === c;
+      });
+    }
+
+    function movPfFiltrado(){
+      if(currentFilters().conta !== 'all' && currentFilters().conta !== 'pf') return [];
+      return DATA.movimentacoesPF || [];
+    }
+
+    function historicoFiltrado(){
+      const hist = DATA.historicoMensal || [];
+      if(currentFilters().periodo === 'mes') return hist.slice(-3);
+      return hist;
+    }
+
+    function saldoSeriesSelecionadas(){
+      const labels = DATA.datasSaldo || [];
+      const ids = contasSelecionadas();
+      const datasets = ids.map(id => ({
+        label: contaNomeById(id),
+        data: DATA.saldoDiario?.[id] || [],
+        borderColor: DATA.meta?.coresContas?.[id] || '#1f6fb2',
+        backgroundColor: DATA.meta?.coresContas?.[id] || '#1f6fb2',
+        tension: .25,
+        spanGaps: true
+      }));
+
+      if(currentFilters().conta === 'all'){
+        const consolidado = labels.map((_, idx) => {
+          return ids.reduce((acc, id) => {
+            const v = DATA.saldoDiario?.[id]?.[idx];
+            return acc + Number(v || 0);
+          }, 0);
+        });
+        datasets.unshift({
+          label: 'Consolidado',
+          data: consolidado,
+          borderColor: '#111827',
+          backgroundColor: '#111827',
+          borderWidth: 3,
+          tension: .25,
+          spanGaps: true
+        });
+      }
+
+      return { labels, datasets };
+    }
+
+    function destroyChart(id){
+      if(charts[id]){
+        charts[id].destroy();
+        delete charts[id];
+      }
+    }
+
+    function renderHeader(){
+      $('tituloDashboard').textContent = DATA.meta?.titulo || 'Dashboard Financeiro Premium';
+      $('subtituloDashboard').textContent = DATA.meta?.subtitulo || '';
+      $('badgeMes').textContent = DATA.meta?.rotuloMes || 'Mês';
+      $('badgeTri').textContent = DATA.meta?.rotuloTrimestre || 'Trimestre';
+      $('notaVisaoGeral').textContent = DATA.meta?.notaVisaoGeral || '';
+    }
+
+    function renderKpisGerais(){
+      const receita = totalReceitaSelecionada();
+      const despesas = totalDespesaSelecionada();
+      const tributos = totalTributoSelecionado();
+      const saldo = totalSaldoSelecionado();
+      const liquido = resultadoLiquido();
+
+      $('kpisGerais').innerHTML = `
+        <div class="kpi-card primary">
+          <div class="kpi-label">Saldo final consolidado</div>
+          <div class="kpi-value">${moeda(saldo)}</div>
+          <div class="kpi-sub">Variação: ${pct(variacaoSaldoPct())}</div>
+        </div>
+        <div class="kpi-card green">
+          <div class="kpi-label">Receita operacional</div>
+          <div class="kpi-value">${moeda(receita)}</div>
+          <div class="kpi-sub">PJs selecionadas</div>
+        </div>
+        <div class="kpi-card dark">
+          <div class="kpi-label">Despesas operacionais</div>
+          <div class="kpi-value">${moeda(despesas)}</div>
+          <div class="kpi-sub">Exclui tributos</div>
+        </div>
+        <div class="kpi-card orange">
+          <div class="kpi-label">Tributos do período</div>
+          <div class="kpi-value">${moeda(tributos)}</div>
+          <div class="kpi-sub">Carga tributária gerencial</div>
+        </div>
+        <div class="kpi-card ${liquido >= 0 ? 'green' : 'red'}">
+          <div class="kpi-label">Resultado líquido</div>
+          <div class="kpi-value">${moeda(liquido)}</div>
+          <div class="kpi-sub">Após tributos</div>
+        </div>
+      `;
+    }
+
+    function renderResumoExecutivo(){
+      const el = $('resumoExecutivo');
+      const items = DATA.resumoExecutivo || [];
+      el.innerHTML = items.length ? items.map(i => `
+        <div class="mini-item">
+          <strong>${i.titulo}</strong>
+          <div class="muted">${i.texto}</div>
+        </div>
+      `).join('') : `<div class="empty">Sem resumo executivo.</div>`;
+    }
+
+    function renderAlertasExecutivos(){
+      const el = $('alertasExecutivos');
+      const items = DATA.alertasExecutivos || [];
+      el.innerHTML = items.length ? items.map(i => `
+        <div class="alert-card ${i.cor || 'yellow'}">
+          <div class="alert-title">${i.icone || '•'} ${i.titulo}</div>
+          <div class="muted">${i.texto}</div>
+        </div>
+      `).join('') : `<div class="empty">Sem alertas executivos.</div>`;
+    }
+
+    function renderKpisPremium(){
+      const receita = totalReceitaSelecionada();
+      const despesas = totalDespesaSelecionada();
+      const tributos = totalTributoSelecionado();
+      const margemOp = receita ? ((receita - despesas) / receita) * 100 : 0;
+      const margemLiq = receita ? ((receita - despesas - tributos) / receita) * 100 : 0;
+      const partPix = receita ? (totalPixSelecionado() / receita) * 100 : 0;
+      const partCartao = receita ? (totalCartaoSelecionado() / receita) * 100 : 0;
+      const top5 = sum(topPagadoresFiltrados().slice(0,5).map(x => Number(x.valor || 0)));
+      const concTop5 = receita ? (top5 / receita) * 100 : 0;
+      const saldoMedio = (() => {
+        const ids = contasSelecionadas();
+        const len = (DATA.datasSaldo || []).length;
+        const serie = Array.from({length: len}, (_, idx) =>
+          ids.reduce((acc, id) => acc + Number(DATA.saldoDiario?.[id]?.[idx] || 0), 0)
+        );
+        return avg(serie);
+      })();
+
+      $('kpisPremium').innerHTML = `
+        <div class="mini-item"><strong>Margem operacional</strong><div class="muted">${pct(margemOp)}</div></div>
+        <div class="mini-item"><strong>Margem líquida</strong><div class="muted">${pct(margemLiq)}</div></div>
+        <div class="mini-item"><strong>Participação PIX</strong><div class="muted">${pct(partPix)}</div></div>
+        <div class="mini-item"><strong>Participação cartão</strong><div class="muted">${pct(partCartao)}</div></div>
+        <div class="mini-item"><strong>Concentração top 5</strong><div class="muted">${pct(concTop5)}</div></div>
+        <div class="mini-item"><strong>Saldo médio consolidado</strong><div class="muted">${moeda(saldoMedio)}</div></div>
+        <div class="mini-item"><strong>Ticket médio</strong><div class="muted">${moeda(DATA.ticketMedio || 0)}</div></div>
+        <div class="mini-item"><strong>RBT12</strong><div class="muted">${moeda(DATA.simplesNacional?.rbt12 || 0)}</div></div>
+      `;
+    }
+
+    function renderHistoricoChart(){
+      destroyChart('chartHistorico');
+      const ctx = $('chartHistorico');
+      const hist = historicoFiltrado();
+
+      charts.chartHistorico = new Chart(ctx, {
+        type:'bar',
+        data:{
+          labels: hist.map(h => h.mes),
+          datasets:[
+            { label:'Receita', data: hist.map(h => h.receita), backgroundColor:'#1e9e6b' },
+            { label:'Despesas', data: hist.map(h => h.despesas), backgroundColor:'#1f6fb2' },
+            { label:'Tributos', data: hist.map(h => h.tributos), backgroundColor:'#c98a1e' }
+          ]
+        },
+        options:{
+          responsive:true,
+          plugins:{ legend:{ position:'bottom' } }
+        }
+      });
+    }
+
+    function renderLiquidez(){
+      const ids = contasSelecionadas();
+      const saldosFinais = ids.map(id => lastNonNull(DATA.saldoDiario?.[id] || []));
+      const minSaldo = ids.reduce((acc,id) => {
+        const serie = (DATA.saldoDiario?.[id] || []).filter(v => v !== null && v !== undefined);
+        if(!serie.length) return acc;
+        return Math.min(acc, ...serie);
+      }, Number.POSITIVE_INFINITY);
+
+      $('kpisLiquidez').innerHTML = `
+        <div class="card"><h3>Saldo final</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(totalSaldoSelecionado())}</div></div>
+        <div class="card"><h3>Saldo inicial</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(saldoInicialSelecionado())}</div></div>
+        <div class="card"><h3>Saldo médio</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(avg(saldosFinais))}</div></div>
+        <div class="card"><h3>Pior ponto de caixa</h3><div class="kpi-value" style="font-size:24px;color:#111827">${isFinite(minSaldo) ? moeda(minSaldo) : moeda(0)}</div></div>
+      `;
+
+      destroyChart('chartSaldo');
+      const s = saldoSeriesSelecionadas();
+      charts.chartSaldo = new Chart($('chartSaldo'), {
+        type:'line',
+        data:{ labels:s.labels, datasets:s.datasets },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+
+      const limites = DATA.limitesConta || {};
+      $('limitesConta').innerHTML = ids.map(id => {
+        const lim = Number(limites[id]?.limite || 0);
+        const util = Number(limites[id]?.utilizado || 0);
+        const pctUso = lim ? (util / lim) * 100 : 0;
+        return `
+          <div class="mini-item">
+            <strong>${contaNomeById(id)}</strong>
+            <div class="muted">Limite: ${moeda(lim)}</div>
+            <div class="muted">Utilizado: ${moeda(util)}</div>
+            <div class="muted">Uso: ${pct(pctUso)}</div>
+          </div>
+        `;
+      }).join('') || `<div class="empty">Sem dados de limite.</div>`;
+    }
+
+    function renderReceitas(){
+      const receita = totalReceitaSelecionada();
+      const pix = totalPixSelecionado();
+      const cartao = totalCartaoSelecionado();
+      const outros = totalOutrosSelecionado();
+      const top1 = topPagadoresFiltrados()[0]?.valor || 0;
+      const concTop1 = receita ? (Number(top1) / receita) * 100 : 0;
+
+      $('kpisReceita').innerHTML = `
+        <div class="card"><h3>Receita total</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(receita)}</div></div>
+        <div class="card"><h3>PIX</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(pix)}</div></div>
+        <div class="card"><h3>Cartão</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(cartao)}</div></div>
+        <div class="card"><h3>Concentração top 1</h3><div class="kpi-value" style="font-size:24px;color:#111827">${pct(concTop1)}</div></div>
+      `;
+
+      destroyChart('chartComposicaoReceita');
+      charts.chartComposicaoReceita = new Chart($('chartComposicaoReceita'), {
+        type:'doughnut',
+        data:{
+          labels:['Cartão','PIX','Outros'],
+          datasets:[{
+            data:[cartao,pix,outros],
+            backgroundColor:['#1f6fb2','#1e9e6b','#c98a1e']
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+
+      const bandeiras = { Visa:0, Mastercard:0, Amex:0, Elo:0 };
+      contasSelecionadasPJ().forEach(id => {
+        const b = DATA.receitaBandeirasPorConta?.[id] || {};
+        Object.keys(bandeiras).forEach(k => bandeiras[k] += Number(b[k] || 0));
+      });
+
+      destroyChart('chartBandeiras');
+      charts.chartBandeiras = new Chart($('chartBandeiras'), {
+        type:'bar',
+        data:{
+          labels:Object.keys(bandeiras),
+          datasets:[{
+            label:'Receita por bandeira',
+            data:Object.values(bandeiras),
+            backgroundColor:['#1f6fb2','#1e9e6b','#c98a1e','#64748b']
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ display:false } } }
+      });
+
+      const body = $('topPagadoresBody');
+      const rows = topPagadoresFiltrados();
+      body.innerHTML = rows.length ? rows.map((p, idx) => `
+        <tr>
+          <td>${idx + 1}</td>
+          <td>${p.nome}</td>
+          <td>${p.label || (p.contas || []).join(', ')}</td>
+          <td class="right">${moeda(p.valor)}</td>
+          <td class="right">${pct(receita ? (Number(p.valor || 0) / receita) * 100 : 0)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" class="center muted">Sem dados.</td></tr>`;
+    }
+
+    function renderTributos(){
+      const receita = totalReceitaSelecionada();
+      const trib = totalTributoSelecionado();
+      const carga = receita ? (trib / receita) * 100 : 0;
+      const simp = DATA.simplesNacional || {};
+      const consumoLimite = simp.limiteAnual ? (Number(simp.rbt12 || 0) / Number(simp.limiteAnual || 1)) * 100 : 0;
+
+      $('kpisTributos').innerHTML = `
+        <div class="card"><h3>Tributos do mês</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(trib)}</div></div>
+        <div class="card"><h3>Carga tributária</h3><div class="kpi-value" style="font-size:24px;color:#111827">${pct(carga)}</div></div>
+        <div class="card"><h3>RBT12</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(simp.rbt12 || 0)}</div></div>
+        <div class="card"><h3>Consumo do limite</h3><div class="kpi-value" style="font-size:24px;color:#111827">${pct(consumoLimite)}</div></div>
+      `;
+
+      $('mapaTributario').innerHTML = (DATA.mapaTributario || []).map(m => `
+        <div class="mini-item">
+          <strong>${m.nome}</strong>
+          <div>${badgeStatus(m.status)}</div>
+          <div class="muted" style="margin-top:6px;">Valor: ${moeda(m.valor)}</div>
+          <div class="muted">${m.observacao || ''}</div>
+        </div>
+      `).join('') || `<div class="empty">Sem mapa tributário.</div>`;
+
+      destroyChart('chartTributosHistorico');
+      const hist = historicoFiltrado();
+      charts.chartTributosHistorico = new Chart($('chartTributosHistorico'), {
+        type:'line',
+        data:{
+          labels: hist.map(h => h.mes),
+          datasets:[{
+            label:'Tributos',
+            data: hist.map(h => h.tributos),
+            borderColor:'#c98a1e',
+            backgroundColor:'#c98a1e',
+            tension:.25
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+
+      $('tributosPagosBody').innerHTML = tributosFiltrados().length ? tributosFiltrados().map(t => `
+        <tr>
+          <td>${t.data}</td>
+          <td>${t.tributo}</td>
+          <td>${t.conta}</td>
+          <td class="right">${moeda(t.valor)}</td>
+          <td>${badgeStatus(t.status)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" class="center muted">Sem tributos para o filtro.</td></tr>`;
+    }
+
+    function renderDespesas(){
+      const desp = totalDespesaSelecionada();
+      const receita = totalReceitaSelecionada();
+      const peso = receita ? (desp / receita) * 100 : 0;
+
+      const porTipo = despesasTipoFiltradas().reduce((acc, item) => {
+        acc[item.tipo] = (acc[item.tipo] || 0) + Number(item.valor || 0);
+        return acc;
+      }, {});
+
+      $('kpisDespesas').innerHTML = `
+        <div class="card"><h3>Despesa total</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(desp)}</div></div>
+        <div class="card"><h3>% sobre receita</h3><div class="kpi-value" style="font-size:24px;color:#111827">${pct(peso)}</div></div>
+        <div class="card"><h3>Despesas fixas</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(porTipo['Fixa'] || 0)}</div></div>
+        <div class="card"><h3>Despesas variáveis</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(porTipo['Variável'] || 0)}</div></div>
+      `;
+
+      const cat = despesasCategoriaFiltradas();
+      destroyChart('chartDespesasCategoria');
+      charts.chartDespesasCategoria = new Chart($('chartDespesasCategoria'), {
+        type:'bar',
+        data:{
+          labels: cat.map(c => c.categoria),
+          datasets:[{
+            label:'Despesas por categoria',
+            data: cat.map(c => c.valor),
+            backgroundColor:'#1f6fb2'
+          }]
+        },
+        options:{
+          responsive:true,
+          indexAxis:'y',
+          plugins:{ legend:{ display:false } }
+        }
+      });
+
+      destroyChart('chartDespesasTipo');
+      charts.chartDespesasTipo = new Chart($('chartDespesasTipo'), {
+        type:'pie',
+        data:{
+          labels:Object.keys(porTipo),
+          datasets:[{
+            data:Object.values(porTipo),
+            backgroundColor:['#123a61','#60a5fa','#1e9e6b','#f59e0b']
+          }]
+        },
+        options:{ responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+    }
+
+    function renderRelacionadas(){
+      const itens = intercompanyFiltrado();
+      const total = sum(itens.map(i => i.valor));
+      const pend = itens.filter(i => i.status === 'pendente').length;
+      const red = itens.filter(i => i.alerta === 'red').length;
+
+      $('kpisRelacionadas').innerHTML = `
+        <div class="card"><h3>Volume relacionado</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(total)}</div></div>
+        <div class="card"><h3>Itens pendentes</h3><div class="kpi-value" style="font-size:24px;color:#111827">${numero(pend,0)}</div></div>
+        <div class="card"><h3>Alertas críticos</h3><div class="kpi-value" style="font-size:24px;color:#111827">${numero(red,0)}</div></div>
+      `;
+
+      $('intercompanyBody').innerHTML = itens.length ? itens.map(i => `
+        <tr>
+          <td>${i.data}</td>
+          <td>${i.origem}</td>
+          <td>${i.destino || '-'}</td>
+          <td class="right">${moeda(i.valor)}</td>
+          <td>${i.natureza}</td>
+          <td>${badgeStatus(i.status)}</td>
+          <td>${badgeStatus(i.documentacao)}</td>
+          <td>${badgeStatus(i.alerta)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="8" class="center muted">Sem operações para o filtro.</td></tr>`;
+
+      const mov = movPfFiltrado();
+      $('movPFBody').innerHTML = mov.length ? mov.map(i => `
+        <tr>
+          <td>${i.data}</td>
+          <td>${i.lancamento}</td>
+          <td class="right">${moeda(i.valor)}</td>
+          <td>${i.classificacao}</td>
+          <td>${badgeStatus(i.status)}</td>
+        </tr>
+      `).join('') : `<tr><td colspan="5" class="center muted">Sem movimentações PF para o filtro.</td></tr>`;
+    }
+
+    function renderCompliance(){
+      $('pendenciasCompliance').innerHTML = (DATA.pendenciasCompliance || []).map(i => `
+        <div class="alert-card ${i.cor || 'yellow'}">
+          <div class="alert-title">${i.icone || '•'} ${i.titulo}</div>
+          <div class="muted">${i.texto}</div>
+        </div>
+      `).join('') || `<div class="empty">Sem pendências.</div>`;
+
+      $('indicadoresGovernanca').innerHTML = (DATA.indicadoresGovernanca || []).map(i => `
+        <div class="mini-item">
+          <strong>${i.nome}</strong>
+          <div>${badgeStatus(i.status)}</div>
+          <div class="muted" style="margin-top:6px;">${i.valor}</div>
+          <div class="muted">${i.observacao || ''}</div>
+        </div>
+      `).join('') || `<div class="empty">Sem indicadores.</div>`;
+    }
+
+    function renderConciliacao(){
+      const c = DATA.conciliacaoResumo || {};
+      $('kpisConciliacao').innerHTML = `
+        <div class="card"><h3>Status do fechamento</h3><div class="kpi-value" style="font-size:24px;color:#111827">${c.statusFechamento || '-'}</div></div>
+        <div class="card"><h3>Saldo bancário final</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(c.saldoBancarioFinal || 0)}</div></div>
+        <div class="card"><h3>Saldo contábil ref.</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(c.saldoContabilReferencia || 0)}</div></div>
+        <div class="card"><h3>Diferença apurada</h3><div class="kpi-value" style="font-size:24px;color:#111827">${moeda(c.diferencaApurada || 0)}</div></div>
+      `;
+
+      $('conciliacaoBody').innerHTML = (DATA.conciliacaoItens || []).map(i => `
+        <tr>
+          <td>${i.item}</td>
+          <td class="right">${moeda(i.bancario)}</td>
+          <td class="right">${moeda(i.contabil)}</td>
+          <td class="right">${moeda(i.diferenca)}</td>
+          <td>${badgeStatus(i.status)}</td>
+        </tr>
+      `).join('') || `<tr><td colspan="5" class="center muted">Sem itens conciliatórios.</td></tr>`;
+    }
+
+    function renderRiscos(){
+      const relacionados = (DATA.intercompany || []).filter(i => i.alerta === 'red').length * 20;
+      const pfPend = (DATA.movimentacoesPF || []).filter(i => i.status === 'pendente').length * 20;
+      const simples = DATA.simplesNacional?.limiteAnual ? (Number(DATA.simplesNacional?.rbt12 || 0) / Number(DATA.simplesNacional?.limiteAnual || 1)) * 100 : 0;
+      const conciliacao = Number(DATA.conciliacaoResumo?.diferencaApurada || 0) > 0 ? 65 : 10;
+      const liquidez = totalSaldoSelecionado() < 0 ? 90 : 25;
+
+      destroyChart('chartRisco');
+      charts.chartRisco = new Chart($('chartRisco'), {
+        type:'radar',
+        data:{
+          labels:['Relacionadas','Conta PF','Simples','Conciliação','Liquidez'],
+          datasets:[{
+            label:'Nível de risco',
+            data:[
+              Math.min(relacionados,100),
+              Math.min(pfPend,100),
+              Math.min(simples,100),
+              conciliacao,
+              liquidez
+            ],
+            borderColor:'#dc2626',
+            backgroundColor:'rgba(220,38,38,.18)'
+          }]
+        },
+        options:{
+          responsive:true,
+          scales:{ r:{ suggestedMin:0, suggestedMax:100 } },
+          plugins:{ legend:{ position:'bottom' } }
+        }
+      });
+
+      $('leituraRisco').innerHTML = `
+        <div class="mini-item">
+          <strong>Sublimite / avanço do Simples</strong>
+          <div class="muted">Consumo atual do limite anual: ${pct(simples)}.</div>
+        </div>
+        <div class="mini-item">
+          <strong>Relacionadas</strong>
+          <div class="muted">Itens com alerta vermelho: ${(DATA.intercompany || []).filter(i => i.alerta === 'red').length}.</div>
+        </div>
+        <div class="mini-item">
+          <strong>Conta PF</strong>
+          <div class="muted">Lançamentos pendentes de classificação: ${(DATA.movimentacoesPF || []).filter(i => i.status === 'pendente').length}.</div>
+        </div>
+        <div class="mini-item">
+          <strong>Conciliação</strong>
+          <div class="muted">${DATA.conciliacaoResumo?.observacao || 'Sem observação.'}</div>
+        </div>
+      `;
+    }
+
+    function validarDados(){
+      const avisos = [];
+      const contas = DATA.contas || [];
+      const datas = DATA.datasSaldo || [];
+
+      contas.forEach(c => {
+        const serie = DATA.saldoDiario?.[c.id] || [];
+        if(serie.length !== datas.length){
+          avisos.push(`Saldo diário da conta "${c.nome}" com ${serie.length} pontos, enquanto datasSaldo tem ${datas.length}.`);
+        }
+      });
+
+      contas.filter(c => c.tipo === 'PJ').forEach(c => {
+        const resumo = DATA.resumoMensalPorConta?.[c.id];
+        const comp = DATA.composicaoReceitaPorConta?.[c.id];
+        if(resumo && comp){
+          const somaComp = Number(comp.cartao || 0) + Number(comp.pix || 0) + Number(comp.outros || 0);
+          const dif = Math.abs(Number(resumo.receita || 0) - somaComp);
+          if(dif > 0.01){
+            avisos.push(`Receita da conta "${c.nome}" diverge da composição em ${moeda(dif)}.`);
+          }
+        }
+      });
+
+      const resumoConc = Number(DATA.conciliacaoResumo?.diferencaApurada || 0);
+      const somaItensConc = sum((DATA.conciliacaoItens || []).map(i => Number(i.diferenca || 0)));
+      if(Math.abs(resumoConc - somaItensConc) > 0.01){
+        avisos.push(`Conciliação: diferença do resumo (${moeda(resumoConc)}) diverge da soma dos itens (${moeda(somaItensConc)}).`);
+      }
+
+      return avisos;
+    }
+
+    function renderRodape(){
+      const avisos = validarDados();
+      const dataAtual = new Date().toLocaleString('pt-BR');
+      $('rodapeTecnico').innerHTML = `
+        Atualizado em ${dataAtual} · Status do fechamento: <strong>${DATA.conciliacaoResumo?.statusFechamento || 'N/D'}</strong>
+        ${avisos.length ? `<br><span style="color:#b45309">Avisos de validação: ${avisos.join(' | ')}</span>` : `<br><span style="color:#15803d">Validação estrutural sem divergências críticas.</span>`}
+      `;
+    }
+
+    function renderAll(){
+      renderHeader();
+      renderKpisGerais();
+      renderResumoExecutivo();
+      renderAlertasExecutivos();
+      renderKpisPremium();
+      renderHistoricoChart();
+      renderLiquidez();
+      renderReceitas();
+      renderTributos();
+      renderDespesas();
+      renderRelacionadas();
+      renderCompliance();
+      renderConciliacao();
+      renderRiscos();
+      renderRodape();
+    }
+
+    function bindTabs(){
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+          btn.classList.add('active');
+          $(btn.dataset.tab).classList.add('active');
+        });
+      });
+    }
+
+    function bindFilters(){
+      $('filtroConta').addEventListener('change', renderAll);
+      $('filtroPeriodo').addEventListener('change', renderAll);
+    }
+
+    function init(){
+      if(!window.DASHBOARD_DATA){
+        document.body.innerHTML = `
+          <div class="container">
+            <div class="card">
+              <h2>dados.js não carregado</h2>
+              <p class="muted">Certifique-se de que o arquivo <strong>dados.js</strong> está na mesma pasta do <strong>index.html</strong> e define <strong>window.DASHBOARD_DATA</strong>.</p>
+            </div>
+          </div>
+        `;
+        return;
+      }
+
+      populateFilters();
+      bindTabs();
+      bindFilters();
+      renderAll();
+    }
+
+    init();
+  </script>
+</body>
+</html>
